@@ -17,9 +17,9 @@ export function useQuery<
   FnReturnType = unknown
 >(
   query: FunctionReference<'query', 'public', FnArgs, FnReturnType>,
-  args: FnArgs | Signal<FnArgs>
+  args?: FnArgs | Signal<FnArgs>
 ) {
   assertInInjectionContext(useQuery);
   const svc = inject(NgxConvexService);
-  return svc.watch(query, args);
+  return svc.watch(query, args ?? {});
 }
