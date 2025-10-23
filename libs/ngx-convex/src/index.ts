@@ -1,1 +1,2 @@
-export * from './lib/ngx-convex';
+//TODO remove
+export const n = 'n';
