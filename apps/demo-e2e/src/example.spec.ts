@@ -3,6 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Home Page', () => {
   test('displays welcome message and navigation', async ({ page }) => {
     await page.goto('/');
+    await page.waitForURL(/.*\/home/);
 
     // Check hero heading
     const heading = page.locator('h1');
@@ -17,6 +18,7 @@ test.describe('Home Page', () => {
 
   test('displays hero description', async ({ page }) => {
     await page.goto('/');
+    await page.waitForURL(/.*\/home/);
 
     await expect(
       page.locator('text=A powerful Angular integration with Convex')
@@ -25,6 +27,7 @@ test.describe('Home Page', () => {
 
   test('displays call-to-action buttons', async ({ page }) => {
     await page.goto('/');
+    await page.waitForURL(/.*\/home/);
 
     const getStartedButton = page.locator('a:has-text("Get Started")');
     const githubButton = page.locator('a:has-text("View on GitHub")');
@@ -39,18 +42,24 @@ test.describe('Home Page', () => {
 
   test('displays feature cards', async ({ page }) => {
     await page.goto('/');
+    await page.waitForURL(/.*\/home/);
 
     // Check for feature cards
     await expect(page.locator('text=Fast & Reactive')).toBeVisible();
-    await expect(page.locator('text=Real-time updates with Angular signals')).toBeVisible();
+    await expect(
+      page.locator('text=Real-time updates with Angular signals')
+    ).toBeVisible();
     await expect(page.locator('text=Easy Setup')).toBeVisible();
-    await expect(page.locator('text=Simple configuration and setup')).toBeVisible();
+    await expect(
+      page.locator('text=Simple configuration and setup')
+    ).toBeVisible();
   });
 
   test('navigates to todos page when clicking Get Started', async ({
     page,
   }) => {
     await page.goto('/');
+    await page.waitForURL(/.*\/home/);
 
     await page.click('a:has-text("Get Started")');
     await expect(page).toHaveURL(/.*\/todos/);
@@ -59,6 +68,7 @@ test.describe('Home Page', () => {
 
   test('navigates to todos page via navigation link', async ({ page }) => {
     await page.goto('/');
+    await page.waitForURL(/.*\/home/);
 
     await page.click('nav >> a:has-text("Todos")');
     await expect(page).toHaveURL(/.*\/todos/);
