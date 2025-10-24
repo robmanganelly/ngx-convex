@@ -45,7 +45,7 @@ export const appConfig: ApplicationConfig = {
 };
 ```
 
-1. create a simple component using the hooks
+2. create a simple component using the hooks
 
 ```ts
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
