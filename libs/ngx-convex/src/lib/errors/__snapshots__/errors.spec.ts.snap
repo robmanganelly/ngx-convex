@@ -1,0 +1,14 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ERRORS > should match snapshot 1`] = `
+{
+  "NGXCB001": {
+    "code": "NGXCB001",
+    "message": "NGXCB001: Convex client has been destroyed and can no longer be used.",
+  },
+  "NGXCB002": {
+    "code": "NGXCB002",
+    "message": "NGXCB002: Convex client has already been initialized.",
+  },
+}
+`;

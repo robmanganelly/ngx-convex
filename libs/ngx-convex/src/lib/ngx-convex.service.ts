@@ -11,7 +11,7 @@ import {
 import { NGX_CONVEX_URL } from './tokens/convex_url';
 import { AuthTokenFetcher, ConnectionState, ConvexClient } from 'convex/browser';
 import { NGX_CONVEX_OPTIONS } from './tokens/convex_options';
-import { ERRORS, throwLibError } from './errors/map';
+import { ERRORS, throwLibError } from './errors/errors';
 import type { DefaultFunctionArgs, FunctionReference } from 'convex/server';
 import { NGX_CONVEX_TOKEN_RESOLVER } from './tokens/auth_options';
 
