@@ -45,5 +45,3 @@ The structure of an error is as follows:
   "code": "NGXCB001"
 }
 ```
-
-TODO
