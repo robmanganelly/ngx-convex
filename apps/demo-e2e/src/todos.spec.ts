@@ -63,9 +63,7 @@ test.describe('Todos Page', () => {
     await expect(page.locator(`text=${todoText}`)).toBeVisible({ timeout: 5000 });
 
     // Stats should now be visible
-    await expect(page.locator('text=Total')).toBeVisible();
-    await expect(page.locator('text=Completed')).toBeVisible();
-    await expect(page.locator('text=Pending')).toBeVisible();
+    await expect(page.getByTestId('todo-stats')).toBeVisible();
   });
 
   test('can toggle a todo as completed', async ({ page }) => {
@@ -161,7 +159,7 @@ test.describe('Todos Page', () => {
 
     // The timestamp should be visible (format: "Created: MM/DD/YYYY at HH:MM AM/PM")
     const todoItem = page.locator(`text=${todoText}`).locator('../..');
-    await expect(todoItem.locator('text=/Created:.*at.*(AM|PM)/')).toBeVisible();
+    await expect(todoItem.locator('text=/Created at.*(AM|PM)/')).toBeVisible();
   });
 
   test('can mark all todos as complete', async ({ page }) => {

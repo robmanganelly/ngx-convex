@@ -1,6 +1,6 @@
 import { Component, signal, effect } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { useQuery, useMutation } from '@robmanganelly/ngx-convex';
 import { api } from '@_convex/_generated/api';
@@ -10,7 +10,7 @@ type Todo = Doc<'todos'>;
 
 @Component({
   selector: 'app-todos',
-  imports: [RouterLink, CommonModule, FormsModule],
+  imports: [RouterLink, FormsModule, DatePipe],
   template: `
     <div
       class="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-purple-600"
@@ -75,150 +75,162 @@ type Todo = Doc<'todos'>;
                   [disabled]="!newTodoText().trim() || isAddingTodo()"
                   data-testid="add-todo-button"
                 >
-                  <span *ngIf="!isAddingTodo()">Add Todo</span>
-                  <span *ngIf="isAddingTodo()" class="opacity-70"
-                    >Adding...</span
-                  >
+                  @if (!isAddingTodo()) {
+                    <span>Add Todo</span>
+                  } @else {
+                    <span class="opacity-70">Adding...</span>
+                  }
                 </button>
               </div>
             </form>
           </div>
 
           <!-- Loading State -->
-          <div
-            *ngIf="isLoading()"
-            class="text-center py-12 text-white bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl"
-          >
+          @if (isLoading()) {
             <div
-              class="w-10 h-10 border-3 border-white/30 border-t-white rounded-full animate-spin mx-auto mb-4"
-            ></div>
-            <p>Loading todos...</p>
-          </div>
-
-          <!-- Error State -->
-          <div
-            *ngIf="error()"
-            class="text-center py-12 text-white bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl"
-          >
-            <div class="text-5xl mb-4">⚠️</div>
-            <p>{{ error() }}</p>
-          </div>
-
-          <!-- Todos List -->
-          <div *ngIf="!isLoading() && !error()">
-            <!-- Stats -->
-            <div
-              class="flex justify-center gap-8 mb-8 p-6 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl text-white"
-              *ngIf="todos() && todos()!.length > 0"
-            >
-              <div class="text-center">
-                <div class="text-3xl font-bold mb-1">{{ todos()!.length }}</div>
-                <div class="text-sm opacity-80">Total</div>
-              </div>
-              <div class="text-center">
-                <div class="text-3xl font-bold mb-1">
-                  {{ completedCount() }}
-                </div>
-                <div class="text-sm opacity-80">Completed</div>
-              </div>
-              <div class="text-center">
-                <div class="text-3xl font-bold mb-1">{{ pendingCount() }}</div>
-                <div class="text-sm opacity-80">Pending</div>
-              </div>
-            </div>
-
-            <!-- Empty State -->
-            <div
-              *ngIf="!todos() || todos()!.length === 0"
               class="text-center py-12 text-white bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl"
             >
-              <div class="text-5xl mb-4">📝</div>
-              <h3 class="text-xl font-semibold mb-2">No todos yet</h3>
-              <p>Add your first todo to get started!</p>
-            </div>
-
-            <!-- Todo Items -->
-            <div
-              *ngIf="todos() && todos()!.length > 0"
-              class="flex flex-col gap-3"
-            >
               <div
-                *ngFor="let todo of todos(); trackBy: trackByTodoId"
-                class="flex items-center justify-between p-5 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white transition-all duration-300 hover:bg-white/15 hover:-translate-y-1"
-                [class.opacity-70]="todo.done"
-                [attr.data-testid]="'todo-item-' + todo._id"
+                class="w-10 h-10 border-3 border-white/30 border-t-white rounded-full animate-spin mx-auto mb-4"
+              ></div>
+              <p>Loading todos...</p>
+            </div>
+          }
+
+          <!-- Error State -->
+          @if (error()) {
+            <div
+              class="text-center py-12 text-white bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl"
+            >
+              <div class="text-5xl mb-4">⚠️</div>
+              <p>{{ error() }}</p>
+            </div>
+          }
+
+          <!-- Todos List -->
+          @if (!isLoading() && !error()) {
+            <div>
+            <!-- Stats -->
+            @if (todos() && todos()!.length > 0) {
+              <div
+                data-testid="todo-stats"
+                class="flex justify-center gap-8 mb-8 p-6 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl text-white"
               >
-                <div class="flex items-center gap-4 flex-1">
-                  <button
-                    class="w-6 h-6 border-2 border-white/50 rounded-md flex items-center justify-center transition-all duration-300 flex-shrink-0 hover:border-white/70"
-                    [class]="
-                      todo.done
-                        ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 border-emerald-500'
-                        : ''
-                    "
-                    (click)="toggleTodo(todo)"
-                    [disabled]="isUpdating(todo._id)"
-                    [attr.data-testid]="'toggle-todo-' + todo._id"
-                  >
-                    <span *ngIf="todo.done" class="text-white font-bold text-sm"
-                      >✓</span
-                    >
-                  </button>
-                  <span
-                    class="text-base transition-all duration-300"
-                    [class.line-through]="todo.done"
-                    [attr.data-testid]="'todo-text-' + todo._id"
-                  >
-                    {{ todo.text }}
-                  </span>
+                <div class="text-center">
+                  <div class="text-3xl font-bold mb-1">{{ todos()!.length }}</div>
+                  <div class="text-sm opacity-80">Total</div>
                 </div>
-                <div class="flex items-center gap-4">
-                  <span
-                    class="text-sm opacity-70 whitespace-nowrap hidden sm:block"
-                  >
-                    {{ formatDate(todo._creationTime) }}
-                  </span>
-                  <button
-                    class="p-2 rounded-md transition-all duration-300 opacity-70 hover:opacity-100 hover:bg-red-500/20 disabled:opacity-40 disabled:cursor-not-allowed"
-                    (click)="deleteTodo(todo)"
-                    [disabled]="isDeleting(todo._id)"
-                    title="Delete todo"
-                    [attr.data-testid]="'delete-todo-' + todo._id"
-                  >
-                    <span *ngIf="!isDeleting(todo._id)">🗑️</span>
-                    <span *ngIf="isDeleting(todo._id)" class="opacity-70"
-                      >⏳</span
-                    >
-                  </button>
+                <div class="text-center">
+                  <div class="text-3xl font-bold mb-1">
+                    {{ completedCount() }}
+                  </div>
+                  <div class="text-sm opacity-80">Completed</div>
+                </div>
+                <div class="text-center">
+                  <div class="text-3xl font-bold mb-1">{{ pendingCount() }}</div>
+                  <div class="text-sm opacity-80">Pending</div>
                 </div>
               </div>
-            </div>
+            }
+
+            <!-- Empty State -->
+            @if (!todos() || todos()!.length === 0) {
+              <div
+                class="text-center py-12 text-white bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl"
+              >
+                <div class="text-5xl mb-4">📝</div>
+                <h3 class="text-xl font-semibold mb-2">No todos yet</h3>
+                <p>Add your first todo to get started!</p>
+              </div>
+            }
+
+            <!-- Todo Items -->
+            @if (todos() && todos()!.length > 0) {
+              <div class="flex flex-col gap-3">
+                @for (todo of todos(); track todo._id) {
+                  <div
+                    class="flex items-center justify-between p-5 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white transition-all duration-300 hover:bg-white/15 hover:-translate-y-1"
+                    [class.opacity-70]="todo.done"
+                    [attr.data-testid]="'todo-item-' + todo._id"
+                  >
+                    <div class="flex items-center gap-4 flex-1">
+                      <button
+                        class="w-6 h-6 border-2 border-white/50 rounded-md flex items-center justify-center transition-all duration-300 flex-shrink-0 hover:border-white/70"
+                        [class]="
+                          todo.done
+                            ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 border-emerald-500'
+                            : ''
+                        "
+                        (click)="toggleTodo(todo)"
+                        [disabled]="isUpdating(todo._id)"
+                        [attr.data-testid]="'toggle-todo-' + todo._id"
+                      >
+                        @if (todo.done) {
+                          <span class="text-white font-bold text-sm">✓</span>
+                        }
+                      </button>
+                      <span
+                        class="text-base transition-all duration-300"
+                        [class.line-through]="todo.done"
+                        [attr.data-testid]="'todo-text-' + todo._id"
+                      >
+                        {{ todo.text }}
+                      </span>
+                    </div>
+                    <div class="flex items-center gap-4">
+                      <span
+                        class="text-sm opacity-70 whitespace-nowrap hidden sm:block"
+                      >
+                        Created at {{ (todo._creationTime) | date:'short' }}
+                      </span>
+                      <button
+                        class="p-2 rounded-md transition-all duration-300 opacity-70 hover:opacity-100 hover:bg-red-500/20 disabled:opacity-40 disabled:cursor-not-allowed"
+                        (click)="deleteTodo(todo)"
+                        [disabled]="isDeleting(todo._id)"
+                        title="Delete todo"
+                        [attr.data-testid]="'delete-todo-' + todo._id"
+                      >
+                        @if (!isDeleting(todo._id)) {
+                          <span>🗑️</span>
+                        } @else {
+                          <span class="opacity-70">⏳</span>
+                        }
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
 
             <!-- Quick Actions -->
-            <div
-              *ngIf="todos() && todos()!.length > 0"
-              class="flex justify-center gap-4 mt-8 pt-8 border-t border-white/20 flex-col sm:flex-row items-center"
-            >
-              <button
-                *ngIf="pendingCount() > 0"
-                class="px-6 py-3 bg-white/10 text-white border border-white/30 rounded-lg font-medium transition-all duration-300 hover:bg-white/20 hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                (click)="markAllComplete()"
-                [disabled]="isUpdatingMultiple()"
-                data-testid="complete-all-button"
+            @if (todos() && todos()!.length > 0) {
+              <div
+                class="flex justify-center gap-4 mt-8 pt-8 border-t border-white/20 flex-col sm:flex-row items-center"
               >
-                Complete All
-              </button>
-              <button
-                *ngIf="completedCount() > 0"
-                class="px-6 py-3 bg-white/10 text-white border border-white/30 rounded-lg font-medium transition-all duration-300 hover:bg-red-500/20 hover:border-red-500/50 hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                (click)="deleteCompleted()"
-                [disabled]="isDeletingMultiple()"
-                data-testid="delete-completed-button"
-              >
-                Delete Completed
-              </button>
+                @if (pendingCount() > 0) {
+                  <button
+                    class="px-6 py-3 bg-white/10 text-white border border-white/30 rounded-lg font-medium transition-all duration-300 hover:bg-white/20 hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                    (click)="markAllComplete()"
+                    [disabled]="isUpdatingMultiple()"
+                    data-testid="complete-all-button"
+                  >
+                    Complete All
+                  </button>
+                }
+                @if (completedCount() > 0) {
+                  <button
+                    class="px-6 py-3 bg-white/10 text-white border border-white/30 rounded-lg font-medium transition-all duration-300 hover:bg-red-500/20 hover:border-red-500/50 hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                    (click)="deleteCompleted()"
+                    [disabled]="isDeletingMultiple()"
+                    data-testid="delete-completed-button"
+                  >
+                    Delete Completed
+                  </button>
+                }
+              </div>
+            }
             </div>
-          </div>
+          }
         </div>
       </div>
     </div>
