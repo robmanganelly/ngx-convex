@@ -1,9 +1,16 @@
 import { defineConfig, devices } from '@playwright/test';
 import { nxE2EPreset } from '@nx/playwright/preset';
 import { workspaceRoot } from '@nx/devkit';
+import { join } from 'path';
 
 // For CI, you may want to set BASE_URL to the deployed application.
 const baseURL = process.env['BASE_URL'] || 'http://localhost:4200';
+
+// Define report paths relative to workspace root
+const reportsDir = join(workspaceRoot, 'reports', 'demo');
+const htmlReportDir = join(reportsDir, 'html');
+const jsonReportDir = join(reportsDir, 'json');
+const junitReportDir = join(reportsDir, 'junit');
 
 /**
  * Read environment variables from file.
@@ -21,7 +28,16 @@ export default defineConfig({
     baseURL,
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
   },
+  /* Reporter configuration - outputs to reports/demo/{html,json,junit} */
+  reporter: [
+    ['list'], // Console output with detailed test results
+    ['html', { outputFolder: htmlReportDir, open: 'never' }],
+    ['json', { outputFile: join(jsonReportDir, 'results.json') }],
+    ['junit', { outputFile: join(junitReportDir, 'results.xml') }],
+  ],
   /* Run your local dev server before starting the tests */
   webServer: {
     command: 'bun nx run demo:serve',

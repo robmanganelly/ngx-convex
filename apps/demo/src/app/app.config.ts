@@ -6,13 +6,14 @@ import {
 import { provideRouter } from '@angular/router';
 import { appRoutes } from './app.routes';
 import { provideConvex } from '@robmanganelly/ngx-convex';
+import { environment } from '../environments/environment';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideZonelessChangeDetection(),
     provideConvex(
-      'https://befitting-caribou-231.convex.cloud',
+      environment.convexUrl,
       () => () => Promise.resolve(null)
     ),
     provideRouter(appRoutes),
