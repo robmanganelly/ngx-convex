@@ -17,7 +17,7 @@ jobs:
   main:
     runs-on: ubuntu-latest
     env:
-      NGX_CONVEX_URL: ${{ secrets.NGX_CONVEX_URL }}
+      VITE_CONVEX_URL: ${{ secrets.NGX_CONVEX_URL }}
     steps:
       - uses: actions/checkout@v4
         with:

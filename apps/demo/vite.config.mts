@@ -8,9 +8,6 @@ export default defineConfig(() => ({
   root: __dirname,
   cacheDir: '../../node_modules/.vite/apps/demo',
   plugins: [angular(), nxViteTsPaths(), nxCopyAssetsPlugin(['*.md'])],
-  define: {
-    'import.meta.env.NGX_CONVEX_URL': JSON.stringify(process.env['NGX_CONVEX_URL']),
-  },
   // Uncomment this if you are using workers.
   // worker: {
   //  plugins: [ nxViteTsPaths() ],
