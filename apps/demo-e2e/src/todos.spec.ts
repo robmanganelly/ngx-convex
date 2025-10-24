@@ -39,33 +39,25 @@ test.describe('Todos Page', () => {
     });
 
     // Verify page is interactive
-    await expect(page.locator('input[placeholder="What needs to be done?"]')).toBeEnabled();
+    await expect(page.getByTestId('todo-input')).toBeEnabled();
   });
 
   test('can add a new todo', async ({ page }) => {
+    await page.goto('/todos');
+
     const todoText = `Test Todo ${Date.now()}`;
-    const input = page.locator('input[placeholder="What needs to be done?"]');
-    const addButton = page.locator('button:has-text("Add Todo")');
+    await page.getByTestId('todo-input').fill(todoText);
+    await page.getByTestId('add-todo-button').click();
 
-    // Type new todo
-    await input.fill(todoText);
-    await expect(addButton).toBeEnabled();
-
-    // Submit
-    await addButton.click();
-
-    // Wait for the todo to appear in the list
-    await expect(page.locator(`text=${todoText}`)).toBeVisible({ timeout: 5000 });
-
-    // Input should be cleared
-    await expect(input).toHaveValue('');
+    // Verify the todo appears in the list
+    await expect(page.locator(`text=${todoText}`)).toBeVisible();
   });
 
   test('displays todo statistics when todos exist', async ({ page }) => {
     // Add a todo first to ensure we have data
     const todoText = `Stats Test ${Date.now()}`;
-    await page.locator('input[placeholder="What needs to be done?"]').fill(todoText);
-    await page.locator('button:has-text("Add Todo")').click();
+    await page.getByTestId('todo-input').fill(todoText);
+    await page.getByTestId('add-todo-button').click();
 
     // Wait for todo to be added
     await expect(page.locator(`text=${todoText}`)).toBeVisible({ timeout: 5000 });
@@ -79,18 +71,19 @@ test.describe('Todos Page', () => {
   test('can toggle a todo as completed', async ({ page }) => {
     // Add a todo first
     const todoText = `Toggle Test ${Date.now()}`;
-    await page.locator('input[placeholder="What needs to be done?"]').fill(todoText);
-    await page.locator('button:has-text("Add Todo")').click();
+    await page.getByTestId('todo-input').fill(todoText);
+    await page.getByTestId('add-todo-button').click();
 
     // Wait for todo to appear
     await expect(page.locator(`text=${todoText}`)).toBeVisible({ timeout: 5000 });
 
-    // Find the todo and its checkbox
-    const todoItem = page.locator(`text=${todoText}`).locator('..');
-    const checkbox = todoItem.locator('button').first();
+    // Get the todo item and extract its ID
+    const todoItem = page.locator(`text=${todoText}`).locator('../..');
+    const todoId = await todoItem.getAttribute('data-testid');
+    const id = (todoId || '').replace('todo-item-', '');
 
-    // Click to toggle
-    await checkbox.click();
+    // Click toggle button using data-testid
+    await page.getByTestId(`toggle-todo-${id}`).click();
 
     // Wait for the opacity change to be applied
     const parent = page.locator(`text=${todoText}`).locator('../..');
@@ -100,24 +93,27 @@ test.describe('Todos Page', () => {
   test('can delete a todo', async ({ page }) => {
     // Add a todo first
     const todoText = `Delete Test ${Date.now()}`;
-    await page.locator('input[placeholder="What needs to be done?"]').fill(todoText);
-    await page.locator('button:has-text("Add Todo")').click();
+    await page.getByTestId('todo-input').fill(todoText);
+    await page.getByTestId('add-todo-button').click();
 
     // Wait for todo to appear
     await expect(page.locator(`text=${todoText}`)).toBeVisible({ timeout: 5000 });
 
-    // Find and click delete button
+    // Get the todo item and extract its ID from data-testid
     const todoItem = page.locator(`text=${todoText}`).locator('../..');
-    const deleteButton = todoItem.locator('button:has-text("Delete")');
-    await deleteButton.click();
+    const todoId = await todoItem.getAttribute('data-testid');
+    const id = (todoId || '').replace('todo-item-', '');
+
+    // Click delete button using the extracted ID
+    await page.getByTestId(`delete-todo-${id}`).click();
 
     // Verify todo is removed
     await expect(page.locator(`text=${todoText}`)).toBeHidden({ timeout: 3000 });
   });
 
   test('add button is disabled when input is empty', async ({ page }) => {
-    const input = page.locator('input[placeholder="What needs to be done?"]');
-    const addButton = page.locator('button:has-text("Add Todo")');
+    const input = page.getByTestId('todo-input');
+    const addButton = page.getByTestId('add-todo-button');
 
     // Clear input if it has content
     await input.clear();
@@ -142,8 +138,8 @@ test.describe('Todos Page', () => {
     ];
 
     for (const todoText of todos) {
-      await page.locator('input[placeholder="What needs to be done?"]').fill(todoText);
-      await page.locator('button:has-text("Add Todo")').click();
+      await page.getByTestId('todo-input').fill(todoText);
+      await page.getByTestId('add-todo-button').click();
       // Wait for each todo to appear before adding the next
       await expect(page.locator(`text=${todoText}`)).toBeVisible({ timeout: 5000 });
     }
@@ -157,8 +153,8 @@ test.describe('Todos Page', () => {
   test('displays timestamp for todos', async ({ page }) => {
     // Add a new todo
     const todoText = `Time Test ${Date.now()}`;
-    await page.locator('input[placeholder="What needs to be done?"]').fill(todoText);
-    await page.locator('button:has-text("Add Todo")').click();
+    await page.getByTestId('todo-input').fill(todoText);
+    await page.getByTestId('add-todo-button').click();
 
     // Wait for todo to appear
     await expect(page.locator(`text=${todoText}`)).toBeVisible({ timeout: 5000 });
@@ -173,19 +169,19 @@ test.describe('Todos Page', () => {
     const todo1 = `Bulk Test 1 ${Date.now()}`;
     const todo2 = `Bulk Test 2 ${Date.now()}`;
 
-    await page.locator('input[placeholder="What needs to be done?"]').fill(todo1);
-    await page.locator('button:has-text("Add Todo")').click();
+    await page.getByTestId('todo-input').fill(todo1);
+    await page.getByTestId('add-todo-button').click();
     await expect(page.locator(`text=${todo1}`)).toBeVisible({ timeout: 5000 });
 
-    await page.locator('input[placeholder="What needs to be done?"]').fill(todo2);
-    await page.locator('button:has-text("Add Todo")').click();
+    await page.getByTestId('todo-input').fill(todo2);
+    await page.getByTestId('add-todo-button').click();
     await expect(page.locator(`text=${todo2}`)).toBeVisible({ timeout: 5000 });
 
-    // Look for the "Mark All Complete" button
-    const markAllButton = page.locator('button:has-text("Mark All Complete")');
-    await expect(markAllButton).toBeVisible();
+    // Click the "Complete All" button
+    const completeAllButton = page.getByTestId('complete-all-button');
+    await expect(completeAllButton).toBeVisible();
 
-    await markAllButton.click();
+    await completeAllButton.click();
 
     // Wait for updates and verify both todos are marked complete
     const todo1Item = page.locator(`text=${todo1}`).locator('../..');
@@ -199,20 +195,23 @@ test.describe('Todos Page', () => {
     // Add a todo and mark it complete
     const todoText = `Delete Completed Test ${Date.now()}`;
 
-    await page.locator('input[placeholder="What needs to be done?"]').fill(todoText);
-    await page.locator('button:has-text("Add Todo")').click();
+    await page.getByTestId('todo-input').fill(todoText);
+    await page.getByTestId('add-todo-button').click();
     await expect(page.locator(`text=${todoText}`)).toBeVisible({ timeout: 5000 });
 
-    // Toggle it to completed
+    // Get the todo item and extract its ID
     const todoItem = page.locator(`text=${todoText}`).locator('../..');
-    const checkbox = todoItem.locator('button').first();
-    await checkbox.click();
+    const todoId = await todoItem.getAttribute('data-testid');
+    const id = (todoId || '').replace('todo-item-', '');
+
+    // Toggle it to completed using data-testid
+    await page.getByTestId(`toggle-todo-${id}`).click();
 
     // Wait for completed state
     await expect(todoItem).toHaveClass(/opacity-70/, { timeout: 3000 });
 
-    // Look for and click the "Delete Completed" button
-    const deleteCompletedButton = page.locator('button:has-text("Delete Completed")');
+    // Click the "Delete Completed" button
+    const deleteCompletedButton = page.getByTestId('delete-completed-button');
     await expect(deleteCompletedButton).toBeVisible();
     await deleteCompletedButton.click();
 

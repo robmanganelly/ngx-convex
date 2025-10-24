@@ -67,11 +67,13 @@ type Todo = Doc<'todos'>;
                   class="flex-1 px-6 py-4 bg-white/10 border border-white/30 rounded-xl text-white placeholder-white/60 focus:outline-none focus:border-white/50 focus:bg-white/15 transition-all duration-300 disabled:opacity-60"
                   [disabled]="isAddingTodo()"
                   required
+                  data-testid="todo-input"
                 />
                 <button
                   type="submit"
                   class="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-indigo-500/25 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none whitespace-nowrap"
                   [disabled]="!newTodoText().trim() || isAddingTodo()"
+                  data-testid="add-todo-button"
                 >
                   <span *ngIf="!isAddingTodo()">Add Todo</span>
                   <span *ngIf="isAddingTodo()" class="opacity-70"
@@ -144,6 +146,7 @@ type Todo = Doc<'todos'>;
                 *ngFor="let todo of todos(); trackBy: trackByTodoId"
                 class="flex items-center justify-between p-5 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white transition-all duration-300 hover:bg-white/15 hover:-translate-y-1"
                 [class.opacity-70]="todo.done"
+                [attr.data-testid]="'todo-item-' + todo._id"
               >
                 <div class="flex items-center gap-4 flex-1">
                   <button
@@ -155,6 +158,7 @@ type Todo = Doc<'todos'>;
                     "
                     (click)="toggleTodo(todo)"
                     [disabled]="isUpdating(todo._id)"
+                    [attr.data-testid]="'toggle-todo-' + todo._id"
                   >
                     <span *ngIf="todo.done" class="text-white font-bold text-sm"
                       >✓</span
@@ -163,6 +167,7 @@ type Todo = Doc<'todos'>;
                   <span
                     class="text-base transition-all duration-300"
                     [class.line-through]="todo.done"
+                    [attr.data-testid]="'todo-text-' + todo._id"
                   >
                     {{ todo.text }}
                   </span>
@@ -178,6 +183,7 @@ type Todo = Doc<'todos'>;
                     (click)="deleteTodo(todo)"
                     [disabled]="isDeleting(todo._id)"
                     title="Delete todo"
+                    [attr.data-testid]="'delete-todo-' + todo._id"
                   >
                     <span *ngIf="!isDeleting(todo._id)">🗑️</span>
                     <span *ngIf="isDeleting(todo._id)" class="opacity-70"
@@ -198,6 +204,7 @@ type Todo = Doc<'todos'>;
                 class="px-6 py-3 bg-white/10 text-white border border-white/30 rounded-lg font-medium transition-all duration-300 hover:bg-white/20 hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                 (click)="markAllComplete()"
                 [disabled]="isUpdatingMultiple()"
+                data-testid="complete-all-button"
               >
                 Complete All
               </button>
@@ -206,6 +213,7 @@ type Todo = Doc<'todos'>;
                 class="px-6 py-3 bg-white/10 text-white border border-white/30 rounded-lg font-medium transition-all duration-300 hover:bg-red-500/20 hover:border-red-500/50 hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                 (click)="deleteCompleted()"
                 [disabled]="isDeletingMultiple()"
+                data-testid="delete-completed-button"
               >
                 Delete Completed
               </button>
