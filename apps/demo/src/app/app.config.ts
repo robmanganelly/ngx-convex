@@ -11,8 +11,9 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideZonelessChangeDetection(),
-    provideConvex('https://befitting-caribou-231.convex.cloud', () =>
-      Promise.resolve(null)
+    provideConvex(
+      'https://befitting-caribou-231.convex.cloud',
+      () => () => Promise.resolve(null)
     ),
     provideRouter(appRoutes),
   ],

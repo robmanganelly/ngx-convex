@@ -20,27 +20,27 @@ import {
  */
 export function provideConvex(
   url: string,
-  tokenResolver: AuthTokenFetcher
+  tokenResolver: () => AuthTokenFetcher
 ): EnvironmentProviders;
 export function provideConvex(
   url: string,
-  tokenResolver: AuthTokenFetcher,
+  tokenResolver: () => AuthTokenFetcher,
   tokenResolverDeps: ProviderToken<unknown>[]
 ): EnvironmentProviders;
 export function provideConvex(
   url: string,
-  tokenResolver: AuthTokenFetcher,
+  tokenResolver: () => AuthTokenFetcher,
   tokenResolverDeps: ProviderToken<unknown>[],
   options?: ConvexClientOptions
 ): EnvironmentProviders;
 export function provideConvex(
   url: string,
-  tokenResolver: AuthTokenFetcher,
+  tokenResolver: () => AuthTokenFetcher,
   options?: ConvexClientOptions
 ): EnvironmentProviders;
 export function provideConvex(
   url: string,
-  tokenResolver: AuthTokenFetcher,
+  tokenResolver: () => AuthTokenFetcher,
   tokenResolverDeps?: ProviderToken<unknown>[] | ConvexClientOptions,
   options?: ConvexClientOptions
 ) {
