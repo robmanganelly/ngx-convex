@@ -9,10 +9,7 @@ import {
   Signal,
 } from '@angular/core';
 import { NGX_CONVEX_URL } from './tokens/convex_url';
-import {
-  ConnectionState,
-  ConvexClient,
-} from 'convex/browser';
+import { AuthTokenFetcher, ConnectionState, ConvexClient } from 'convex/browser';
 import { NGX_CONVEX_OPTIONS } from './tokens/convex_options';
 import { ERRORS, throwLibError } from './errors/map';
 import type { DefaultFunctionArgs, FunctionReference } from 'convex/server';
@@ -61,16 +58,13 @@ export class NgxConvexService {
 
   private readonly _status = signal<ConnectionState | null>(null);
   private readonly _isAuthenticated = signal<boolean>(false);
+  private readonly _init = signal<boolean>(false);
 
   /**
    * @internal do not use
    */
   private readonly _connStateSub = this.client.subscribeToConnectionState((s) =>
     this._status.set(s)
-  );
-
-  private readonly _setAuth = this.client.setAuth(this.tokenResolver, (s) =>
-    this._isAuthenticated.set(s)
   );
 
   /**
@@ -83,12 +77,56 @@ export class NgxConvexService {
     this.effectMap.forEach((e) => e.destroy());
     this.queriesMap.clear();
     this._client.close();
+    this._client.client.clearAuth();
   });
 
   // public API
 
   public readonly status = this._status.asReadonly();
   public readonly isAuthenticated = this._isAuthenticated.asReadonly();
+
+
+  clearAuth() {
+    this._client.client.clearAuth();
+  }
+
+  /**
+   * @internal, called during environment initialization
+   */
+  init(){
+    if (this._init()) {
+      return throwLibError(ERRORS.NGXCB002.code);
+    }
+    this._init.set(true);
+    this.client.setAuth(this.tokenResolver, s=>this._isAuthenticated.set(s));
+  }
+
+  /**
+   * Invoke this function to set the authentication token.
+   * Useful for scenarios where the token needs to be refreshed.
+   * when the application is initialized, this function can be called with the initial token.
+   * @param tokenFn
+   */
+  refreshAuth(tokenFn: AuthTokenFetcher) {
+    this.client.setAuth(tokenFn, (s) => this._isAuthenticated.set(s));
+  }
+
+  /**
+   * calls an action on the server to be executed
+   */
+  useAction<P extends DefaultFunctionArgs>(
+    actionFn: FunctionReference<'action', 'public', P>
+  ) {
+    return (payload: P) => this.client.action(actionFn, payload);
+  }
+
+  // changing a resource in the server via mutation
+  useMutation<P extends DefaultFunctionArgs>(
+    mutationFn: FunctionReference<'mutation', 'public', P>
+  ) {
+    return (payload: P) => this.client.mutation(mutationFn, payload);
+  }
+
 
   // registering queries
   watch<
@@ -119,21 +157,5 @@ export class NgxConvexService {
     this.queriesMap.set(query, qR);
 
     return qR;
-  }
-
-  // changing a resource in the server via mutation
-  useMutation<P extends DefaultFunctionArgs>(
-    mutationFn: FunctionReference<'mutation', 'public', P>
-  ) {
-    return (payload: P) => this.client.mutation(mutationFn, payload);
-  }
-
-  /**
-   * calls an action on the server to be executed
-   */
-  useAction<P extends DefaultFunctionArgs>(
-    actionFn: FunctionReference<'action', 'public', P>
-  ) {
-    return (payload: P) => this.client.action(actionFn, payload);
   }
 }

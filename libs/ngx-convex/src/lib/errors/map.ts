@@ -3,8 +3,13 @@ export const ERRORS = {
     message:
       'NGXCB001: Convex client has been destroyed and can no longer be used.',
     code: 'NGXCB001',
-  } as const,
-};
+  },
+  NGXCB002: {
+    message:
+      'NGXCB002: Convex client has already been initialized.',
+    code: 'NGXCB002',
+  },
+} as const;
 
 type K = keyof typeof ERRORS;
 type V = (typeof ERRORS)[K];

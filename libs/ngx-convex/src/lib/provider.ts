@@ -5,7 +5,9 @@ import { NgxConvexService } from './ngx-convex.service';
 import { NGX_CONVEX_TOKEN_RESOLVER } from './tokens/auth_options';
 import {
   EnvironmentProviders,
+  inject,
   makeEnvironmentProviders,
+  provideEnvironmentInitializer,
   ProviderToken,
 } from '@angular/core';
 
@@ -58,5 +60,6 @@ export function provideConvex(
         : [],
     },
     { provide: NgxConvexService },
+    provideEnvironmentInitializer(()=>inject(NgxConvexService).init())
   ]);
 }

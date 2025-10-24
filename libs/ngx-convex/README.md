@@ -24,14 +24,79 @@ bun install @robmanganelly/ngx-convex
 
 ```
 
-2. provide the Convex client in your Angular application
+1. provide the Convex client in your Angular application
   
   
 ```typescript
-export const appConfig = {}
+import { ApplicationConfig } from '@angular/core';
+import { provideConvex } from '@robmanganelly/ngx-convex';
+import { environment } from '../environments/environment';
 
+// Token resolver factory. If you don't use auth yet, return undefined.
+const tokenProvider = () => async () => undefined as string | undefined;
+
+const CONVEX_URL = environment.convexUrl;
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    // If your tokenProvider needs DI deps, use the overload with deps: provideConvex(url, tokenProvider, [YourService], options)
+    provideConvex(CONVEX_URL, tokenProvider, { unsavedChangesWarning: true }),
+  ],
+};
 ```
 
+1. create a simple component using the hooks
+
+```ts
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { useQuery, useMutation } from '@robmanganelly/ngx-convex';
+import { api } from 'convex/_generated/api';
+import type { Doc } from 'convex/_generated/dataModel';
+
+type Todo = Doc<'todos'>;
+
+@Component({
+  selector: 'app-todos',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    <form (ngSubmit)="add()" class="flex gap-2">
+      <input
+        class="border px-3 py-2 rounded"
+        name="text"
+        [value]="text()"
+        (input)="text.set(($event.target as HTMLInputElement).value)"
+        placeholder="New todo"
+      />
+      <button class="px-3 py-2 rounded bg-blue-600 text-white" type="submit">Add</button>
+    </form>
+
+    <ul class="mt-4 space-y-2">
+      @for (t of todos() ?? []; track t._id) {
+        <li class="flex items-center gap-2">
+          <span>{{ t.text }}</span>
+        </li>
+      }
+    </ul>
+  `,
+})
+export class TodosComponent {
+  // Local state via signals
+  text = signal('');
+
+  // Live query (Signal<Todo[] | null>)
+  todos = useQuery(api.todos.list);
+
+  // Mutation to create a todo
+  create = useMutation(api.todos.create);
+
+  async add() {
+    const value = this.text().trim();
+    if (!value) return;
+    await this.create({ text: value });
+    this.text.set('');
+  }
+}
+```
 
 ## Errors
 
