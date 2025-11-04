@@ -1,82 +1,112 @@
-# NgxConvex
+# @robmanganelly/ngx-convex
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+## Overview
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is almost ready ✨.
+This library uses Angular DI and Signals, which makes it fully compatible with Angular's reactive system.
+It provides a seamless integration with Convex's client, allowing you to use queries, mutations, and actions in an Angular-friendly way.
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/getting-started/tutorials/angular-monorepo-tutorial?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+It will be particularly useful for developers with experience in React, as it exposes React-like hooks wrapping the base angular service.
+Even for seasoned Angular developers, we recommend using the hooks provided in this library, because they offer a more declarative and concise way to work with Convex.
 
-## Finish your CI setup
+The library is configured via Injection Tokens and fully compatible with Angular's dependency injection system and principles.
 
-[Click here to finish setting up your workspace!](https://cloud.nx.app/connect/mIASxtTgF8)
+## Usage
 
+1. install the package via npm or yarn
 
-## Run tasks
+```bash
 
-To run the dev server for your app, use:
+#npm
+npm install @robmanganelly/ngx-convex
 
-```sh
-npx nx serve demo
+#bun
+bun install @robmanganelly/ngx-convex
+
 ```
 
-To create a production bundle:
+1. provide the Convex client in your Angular application
+  
+  
+```typescript
+import { ApplicationConfig } from '@angular/core';
+import { provideConvex } from '@robmanganelly/ngx-convex';
+import { environment } from '../environments/environment';
 
-```sh
-npx nx build demo
+// Token resolver factory. If you don't use auth yet, return undefined.
+const tokenProvider = () => async () => undefined as string | undefined;
+
+const CONVEX_URL = environment.convexUrl;
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    // If your tokenProvider needs DI deps, use the overload with deps: provideConvex(url, tokenProvider, [YourService], options)
+    provideConvex(CONVEX_URL, tokenProvider, { unsavedChangesWarning: true }),
+  ],
+};
 ```
 
-To see all available targets to run for a project, run:
+2. create a simple component using the hooks
 
-```sh
-npx nx show project demo
+```ts
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { useQuery, useMutation } from '@robmanganelly/ngx-convex';
+import { api } from 'convex/_generated/api';
+import type { Doc } from 'convex/_generated/dataModel';
+
+type Todo = Doc<'todos'>;
+
+@Component({
+  selector: 'app-todos',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    <form (ngSubmit)="add()" class="flex gap-2">
+      <input
+        class="border px-3 py-2 rounded"
+        name="text"
+        [value]="text()"
+        (input)="text.set(($event.target as HTMLInputElement).value)"
+        placeholder="New todo"
+      />
+      <button class="px-3 py-2 rounded bg-blue-600 text-white" type="submit">Add</button>
+    </form>
+
+    <ul class="mt-4 space-y-2">
+      @for (t of todos() ?? []; track t._id) {
+        <li class="flex items-center gap-2">
+          <span>{{ t.text }}</span>
+        </li>
+      }
+    </ul>
+  `,
+})
+export class TodosComponent {
+  // Local state via signals
+  text = signal('');
+
+  // Live query (Signal<Todo[] | null>)
+  todos = useQuery(api.todos.list);
+
+  // Mutation to create a todo
+  create = useMutation(api.todos.create);
+
+  async add() {
+    const value = this.text().trim();
+    if (!value) return;
+    await this.create({ text: value });
+    this.text.set('');
+  }
+}
 ```
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+## Errors
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+This package exposes errors as codes, check internal implementation for full details.
 
-## Add new projects
+The structure of an error is as follows:
 
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
-
-Use the plugin's generator to create new projects.
-
-To generate a new application, use:
-
-```sh
-npx nx g @nx/angular:app demo
+```json
+{
+  "message": "\"NGXCB001\": Convex client has been destroyed and can no longer be used.",
+  "code": "NGXCB001"
+}
 ```
-
-To generate a new library, use:
-
-```sh
-npx nx g @nx/angular:lib mylib
-```
-
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
-
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Install Nx Console
-
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
-
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Useful links
-
-Learn more:
-
-- [Learn more about this workspace setup](https://nx.dev/getting-started/tutorials/angular-monorepo-tutorial?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
