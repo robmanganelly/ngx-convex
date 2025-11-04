@@ -6,18 +6,17 @@ on:
       - main
   pull_request:
 
-env:
-  NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CI_READ_WRITE }}
-
 permissions:
   actions: read
   contents: read
 
 jobs:
   main:
+    environment: CI
     runs-on: ubuntu-latest
     env:
-      VITE_CONVEX_URL: ${{ secrets.NGX_CONVEX_URL }}
+      NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CI_READ_WRITE }}
+      VITE_CONVEX_URL: ${{ vars.NGX_CONVEX_URL }}
     steps:
       - uses: actions/checkout@v4
         with:
