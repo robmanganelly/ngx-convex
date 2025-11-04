@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CI_READ_WRITE }}
-      VITE_CONVEX_URL: ${{ vars.NGX_CONVEX_URL }}
+      VITE_CONVEX_URL: ${{ secrets.NGX_CONVEX_URL }}
     steps:
       - uses: actions/checkout@v4
         with:
