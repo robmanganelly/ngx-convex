@@ -1,0 +1,56 @@
+# .github/workflows/deploy.yml
+name: Deploy ngx-convex
+
+on:
+  push:
+    branches: [ master ]
+
+permissions:
+  contents: write      # needed for creating GitHub Releases and pushing tags/commits
+  id-token: write      # needed for npm provenance (recommended)
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org/
+
+      - name: Install deps
+        run: npm ci
+
+      # Build the Angular library so Nx Release can publish built artifacts
+      - name: Build ngx-convex
+        run: npx nx build ngx-convex
+
+      # Version + changelog + tag (conventional commits); skip prompts
+      - name: Version via Nx Release
+        run: npx nx release version --yes
+
+      # Push version commit and tag so the repo stays in sync
+      - name: Push changes
+        run: |
+          git push origin HEAD:master --follow-tags
+
+      # Publish to npm and create a GitHub Release
+      - name: Publish (npm) & GitHub Release
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}  # create in repo secrets
+          NPM_CONFIG_PROVENANCE: "true"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # provided by Actions
+        run: npx nx release publish --yes

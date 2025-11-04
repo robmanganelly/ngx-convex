@@ -14,7 +14,10 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
-    "paths": {}
+    "paths": {
+      "@robmanganelly/ngx-convex": ["libs/ngx-convex/src/index.ts"],
+      "@_convex/*": ["convex/*"]
+    }
   },
   "exclude": ["node_modules", "tmp"]
 }
