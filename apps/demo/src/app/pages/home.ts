@@ -10,7 +10,7 @@ import { RouterLink } from "@angular/router";
       <nav class="sticky top-0 z-50 bg-white/10 backdrop-blur-md border-b border-white/20 py-4">
         <div class="max-w-6xl mx-auto px-8 flex justify-between items-center">
           <div class="flex items-center">
-            <h2 class="text-white text-2xl font-bold">NGX Convex</h2>
+            <h2 class="text-white text-2xl font-bold">NGX Convex (Demo)</h2>
           </div>
           <div class="flex gap-8">
             <a routerLink="/home" class="text-white bg-white/10 px-4 py-2 rounded-lg font-medium">Home</a>
